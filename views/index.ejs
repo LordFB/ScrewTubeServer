@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .wrap {
+            display: flex;
+            flex-direction: column;
+            padding: 50px;
+            column-gap: 25px;
+            row-gap: 25px;
+            max-width:1200px;
+            margin:0px auto;
+            background:rgb(252, 254, 248);
+        }
+
+        input,
+        button {
+            padding: 5px 10px;
+        }
+        .inputs{
+            display: flex;
+            column-gap: 25px;
+        }
+        .viddisplay{
+            min-width:540px;
+            min-height:270px;
+            background:#CCC;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="inputs">
+            <input type="text" id="query" placeholder="Search">
+            <button>GO</button>
+        </div>
+        <div class="results">
+
+        </div>
+    </div>
+    <script>
+        let query = document.querySelector('#query');
+        let results = document.querySelector();
+        document.querySelector('button').onclick = function(){
+            fetch('/search/' + query.value).then( res => res.json() ).then( data => {
+                data.forEach( d => showResult(d));
+            });
+        };
+
+        function showResult(data){
+            let wrap = document.createElement('wrap');
+            let h1 =
+        }
+    </script>
+</body>
+
+</html>

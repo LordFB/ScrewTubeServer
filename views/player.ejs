@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        video {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+        }
+
+        .overlay {
+            width: 100vw;
+            height: 100vh;
+            background: #000000BB;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #playbut {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+        }
+
+        #playbut>img {
+            opacity: 0.8;
+        }
+
+        .slider {
+            width: 100%;
+            position: fixed;
+            bottom: 25px;
+            display: flex;
+            column-gap: 10px;
+            color: #FFF;
+            margin: 0px 25px;
+        }
+
+        .slider span {
+            padding: 0px 10px;
+        }
+
+        #track {
+            width: 100%;
+            margin-right: 25px;
+        }
+
+        /*********** Baseline, reset styles ***********/
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            width: 25rem;
+        }
+
+        /* Removes default focus */
+        input[type="range"]:focus {
+            outline: none;
+        }
+
+        /******** Chrome, Safari, Opera and Edge Chromium styles ********/
+        /* slider track */
+        input[type="range"]::-webkit-slider-runnable-track {
+            background-color: #ffffffdd;
+            border-radius: 0.5rem;
+            height: 0.5rem;
+        }
+
+        /* slider thumb */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            /* Override default look */
+            appearance: none;
+            margin-top: -8.5px;
+            /* Centers thumb on the track */
+            background-color: #00c6ff;
+            border-radius: 50%;
+            height: 25px;
+            width: 25px;
+        }
+
+        input[type="range"]:focus::-webkit-slider-thumb {
+            outline: 3px solid #fff;
+            outline-offset: -0.125rem;
+        }
+
+        /*********** Firefox styles ***********/
+        /* slider track */
+        input[type="range"]::-moz-range-track {
+            background-color: #ffffffdd;
+            border-radius: 0.5rem;
+            height: 0.5rem;
+        }
+
+        /* slider thumb */
+        input[type="range"]::-moz-range-thumb {
+            background-color: #00c6ff;
+            border: none;
+            /*Removes extra border that FF applies*/
+            border-radius: 50%;
+            height: 25px;
+            width: 25px;
+        }
+
+        input[type="range"]:focus::-moz-range-thumb {
+            outline: 3px solid #fff;
+            outline-offset: -0.125rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="overlay">
+            <div id="playbut"><img src="/icons/play-circle-outline.svg"></div>
+            <div class="slider">
+                <span><span id="cur_time">cur</span>/<span id="duration"></span></span>
+                <input type="range" step="0.1" id="track">
+            </div>
+        </div>
+        <video src="<%= info.player_response.streamingData.formats[1].url %>"></video>
+    </div>
+    <!-- <pre><%= JSON.stringify(info,null,4) %></pre> -->
+
+    <script>
+        var time = <%= info.player_response.streamingData.formats[0].approxDurationMs %> / 1000;
+
+        let wrapper = document.querySelector('.wrap');
+        let overlay = document.querySelector('.overlay');
+        let video = document.querySelector('video');
+        let playing = false;
+        let playButton = document.querySelector('#playbut > img');
+        let track = document.querySelector('#track');
+
+        let curTimeEl = document.querySelector('#cur_time');
+        let durationEl = document.querySelector('#duration');
+
+        durationEl.innerText = secondsToTime(time);
+        curTimeEl.innerText = secondsToTime(0);
+
+        let overlayTimeout;
+
+        function secondsToTime(s) {
+            return `${Math.floor(s / 60)}:${("0" + Math.round(s % 60)).slice(-2)}`;
+        }
+
+        function update() {
+            window.requestAnimationFrame(update);
+            if (!playing) return;
+            let step = time / 100;
+            let pos = video.currentTime / step;
+            track.value = pos;
+        }
+
+        update();
+
+        overlay.onclick = function (e) {
+            if (e.target.id === 'track') return;
+            if (!playing) {
+                overlayTimeout = setTimeout(() => { overlay.style.opacity = 0 }, 1000);
+                playButton.src = "/icons/pause-circle-outline.svg";
+                //wrapper.requestFullscreen();
+                video.play();
+            }
+            else {
+                playButton.src = "/icons/play-circle-outline.svg";
+                video.pause();
+            }
+            playing = !playing;
+        }
+        track.addEventListener('input', () => {
+            let timePos = time / 100 * parseFloat(track.value);
+            curTimeEl.innerText = secondsToTime(video.currentTime);
+        });
+        track.addEventListener('change', () => {
+            let timePos = time / 100 * parseFloat(track.value);
+            video.currentTime = timePos;
+            curTimeEl.innerText = secondsToTime(video.currentTime);
+            console.log(timePos);
+        })
+
+        window.addEventListener('pointermove', () => {
+            overlay.style.opacity = 1;
+            if (playing) {
+                clearTimeout(overlayTimeout);
+                overlayTimeout = setTimeout(() => { overlay.style.opacity = 0; }, 2500);
+            }
+        })
+
+    </script>
+</body>
+
+</html>
